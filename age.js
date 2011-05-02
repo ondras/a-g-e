@@ -1,4 +1,10 @@
-var _ = function(key) { return key; }
+var _ = function(key) { 
+	try {
+		return arguments.callee.DICT[key];
+	} catch (e) {
+		return key; 
+	}
+}
 
 var AGE = OZ.Class();
 
@@ -13,16 +19,22 @@ AGE.prototype.init = function(adventure) {
 	this._actions = [];
 	
 	this._dom = {
+		header: OZ.DOM.elm("h2"),
 		location: OZ.DOM.elm("div", {id:"location"}),
 		actions: OZ.DOM.elm("div", {id:"actions"}),
-		inventory: OZ.DOM.elm("ul", {id:"inventory"})
+		inventory: OZ.DOM.elm("div", {id:"inventory"})
 	}
 	
-	OZ.DOM.append([document.body, this._dom.inventory, this._dom.location, this._dom.actions]);
+	document.body.innerHTML = "";
+	OZ.DOM.append([document.body, this._dom.header, this._dom.inventory, this._dom.location, this._dom.actions]);
 	OZ.Event.add(this._dom.actions, "click", this._clickAction.bind(this));
+	
+	this._start();
 }
 
-AGE.prototype.start = function() {
+AGE.prototype._start = function() {
+	this._dom.header.innerHTML = this._adventure.name;
+	
 	this._variables = {};
 	this._location = null;
 
@@ -40,7 +52,7 @@ AGE.prototype.start = function() {
 	}
 	
 	if (!this._location) {
-		alert(_("No starting location available"));
+		alert(_("error.nostart"));
 		return;
 	}
 	
@@ -52,11 +64,19 @@ AGE.prototype.start = function() {
  * Display current location
  */
 AGE.prototype._showLocation = function() {
+	OZ.DOM.clear(this._dom.location);
 	this._dom.actions.style.display = "none";
 	
 	var location = this._adventure.locations[this._location];
 	location.discovered = true;
-	this._dom.location.innerHTML = location.name;
+	
+	var h3 = OZ.DOM.elm("h3", {innerHTML:location.name});
+	this._dom.location.appendChild(h3);
+	
+	if (location.description) {
+		var p = OZ.DOM.elm("p", {innerHTML:location.description});
+		this._dom.location.appendChild(p);
+	}
 	
 	if (!(location.flags & AGE.LOCATION_END)) { this._showActions(); }
 }
@@ -68,7 +88,7 @@ AGE.prototype._showActions = function() {
 	var actions = this._adventure.locations[this._location].actions;
 	OZ.DOM.clear(this._dom.actions);
 	
-	var h3 = OZ.DOM.elm("h3", {innerHTML:_("Available actions:")});
+	var h3 = OZ.DOM.elm("h3", {innerHTML:_("actions")});
 	var ul = OZ.DOM.elm("ul");
 	OZ.DOM.append([this._dom.actions, h3, ul]);
 	
@@ -98,7 +118,7 @@ AGE.prototype._showActions = function() {
 	}
 	
 	if (indexActions.length) {
-		var h3 = OZ.DOM.elm("h3", {innerHTML:_("You can always return to:")});
+		var h3 = OZ.DOM.elm("h3", {innerHTML:_("index")});
 		var ul = OZ.DOM.elm("ul");
 		while (indexActions.length) {
 			var action = indexActions.shift();
@@ -120,16 +140,28 @@ AGE.prototype._showActions = function() {
  */
 AGE.prototype._updateInventory = function() {
 	OZ.DOM.clear(this._dom.inventory);
+	
+	var h3 = OZ.DOM.elm("h3", {innerHTML:_("inventory")});
+	var ul = OZ.DOM.elm("ul");
 
+	OZ.DOM.append([this._dom.inventory, h3, ul]);
+
+	var count = 0;
 	for (var id in this._variables) {
 		var v = this._adventure.variables[id];
 		if (!v.visible) { continue; }
+		count++;
 		var li = OZ.DOM.elm("li");
 		li.innerHTML = v.name + ": " + this._variables[id];
 		this._dom.inventory.appendChild(li);
 	}
 	
-	this._dom.inventory.style = (this._dom.inventory.firstChild ? "" : "none");
+	if (count) {
+		this._dom.inventory.style = "";
+	} else {
+		this._dom.inventory.style = "none";
+	}
+	
 }
 
 /**
