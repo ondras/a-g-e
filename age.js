@@ -37,6 +37,14 @@ AGE.prototype.init = function(file) {
 AGE.prototype._responseAdventure = function(adventure) {
 	this._adventure = eval("(" + adventure + ")");
 	
+	var links = document.getElementsByTagName("link");
+	while (links.length) { links[0].parentNode.removeChild(links[0]); }
+	
+	if (this._adventure.style) {
+		var link = OZ.DOM.elm("link", {rel:"stylesheet", type:"text/css", href:this._adventure.style});
+		document.getElementsByTagName("head")[0].appendChild(link);
+	}
+	
 	var language = this._adventure.language || "en";
 	this._requestLanguage(language);
 }

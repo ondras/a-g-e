@@ -1,6 +1,7 @@
 {
 	name: "Sample Adventure",
 	language: "en",
+	style: "sample.css",
 	
 	variables: {
 		"hp": {
