@@ -194,9 +194,9 @@ AGE.prototype._updateInventory = function() {
 	}
 	
 	if (count) {
-		this._dom.inventory.style = "";
+		this._dom.inventory.style.display = "";
 	} else {
-		this._dom.inventory.style = "none";
+		this._dom.inventory.style.display = "none";
 	}
 	
 }
