@@ -1,4 +1,4 @@
-var sample = {
+{
 	name: "Sample Adventure",
 	language: "en",
 	
@@ -12,7 +12,13 @@ var sample = {
 			name: "Dollarz",
 			value: 2,
 			visible: true
+		},
+		"courage": {
+			name: "Courage",
+			value: true,
+			visible: true
 		}
+		
 	},
 	
 	locations: {
@@ -28,9 +34,19 @@ var sample = {
 				
 				{
 					description: "Go randomly",
-					modifies: {
-						"location": "Math.random() > 0.5 ? 'random1' : 'random2'"
-					}
+					
+					alternatives: [
+						{
+							requires: {
+								"money": ">-1 && Math.random() > 0.5"
+							},
+							location: "random2",
+							result: "This is results #2"
+						}
+					],
+
+					location: "random1",
+					result: "This is result #1"
 				},
 				
 				{
@@ -56,7 +72,7 @@ var sample = {
 				{
 					description: "Earn money",
 					result: "You earn much money.",
-					modifies: {
+					variables: {
 						"money": "+= 1"
 					}
 				}

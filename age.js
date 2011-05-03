@@ -12,8 +12,8 @@ AGE.LOCATION_START	= 1;
 AGE.LOCATION_END	= 2;
 AGE.LOCATION_INDEX	= 4;
 
-AGE.prototype.init = function(adventure) {
-	this._adventure = adventure;
+AGE.prototype.init = function(file) {
+	this._adventure = null;
 	this._location = null;
 	this._variables = {};
 	this._actions = [];
@@ -22,14 +22,37 @@ AGE.prototype.init = function(adventure) {
 		header: OZ.DOM.elm("h2"),
 		location: OZ.DOM.elm("div", {id:"location"}),
 		actions: OZ.DOM.elm("div", {id:"actions"}),
-		inventory: OZ.DOM.elm("div", {id:"inventory"})
+		inventory: OZ.DOM.elm("div", {id:"inventory"}),
+		ok: OZ.DOM.elm("button", {innerHTML:"OK"})
 	}
 	
 	document.body.innerHTML = "";
 	OZ.DOM.append([document.body, this._dom.header, this._dom.inventory, this._dom.location, this._dom.actions]);
 	OZ.Event.add(this._dom.actions, "click", this._clickAction.bind(this));
+	OZ.Event.add(this._dom.ok, "click", this._clickOK.bind(this));
 	
-	this._start();
+	OZ.Request(file, this._responseAdventure.bind(this));
+}
+
+AGE.prototype._responseAdventure = function(adventure) {
+	this._adventure = eval("(" + adventure + ")");
+	
+	var language = this._adventure.language || "en";
+	this._requestLanguage(language);
+}
+
+AGE.prototype._requestLanguage = function(language) {
+	var f = "age." + language + ".js";
+	OZ.Request(f, this._responseLanguage.bind(this));
+}
+
+AGE.prototype._responseLanguage = function(data, status) {
+	if (status != 200) { 
+		this._requestLanguage("en");
+	} else {
+		eval(data);
+		this._start();
+	}
 }
 
 AGE.prototype._start = function() {
@@ -96,7 +119,7 @@ AGE.prototype._showActions = function() {
 	for (var i=0;i<actions.length;i++) {
 		var action = actions[i];
 		var li = OZ.DOM.elm("li");
-		if (this._validateAction(action)) {
+		if (this._validateRequirements(action.requires)) {
 			var a = OZ.DOM.elm("a", {href:"#", innerHTML:action.description});
 			li.appendChild(a);
 			action.node = a;
@@ -149,10 +172,16 @@ AGE.prototype._updateInventory = function() {
 	var count = 0;
 	for (var id in this._variables) {
 		var v = this._adventure.variables[id];
-		if (!v.visible) { continue; }
+		if (!v.visible || !this._variables[id]) { continue; }
 		count++;
+
 		var li = OZ.DOM.elm("li");
-		li.innerHTML = v.name + ": " + this._variables[id];
+		if (typeof(this._variables[id]) == "boolean") {
+			li.innerHTML = v.name;
+		} else {
+			li.innerHTML = this._variables[id] + "x " + v.name;
+		}
+
 		this._dom.inventory.appendChild(li);
 	}
 	
@@ -176,11 +205,11 @@ AGE.prototype._clickAction = function(e) {
 	}
 }
 
-AGE.prototype._validateAction = function(action) {
-	if (!action.requires) { return true; }
-	for (var id in action.requires) {
+AGE.prototype._validateRequirements = function(requires) {
+	if (!requires) { return true; }
+	for (var id in requires) {
 		var amount = this._variables[id];
-		if (!eval(amount + action.requires[id])) { return false; }
+		if (!eval(amount + requires[id])) { return false; }
 	}
 	return true;
 }
@@ -189,22 +218,39 @@ AGE.prototype._validateAction = function(action) {
  * Execute a given action
  */
 AGE.prototype._executeAction = function(action) {
-	if (action.result) { alert(action.result); }
+	var result = action;
 	
-	if (action.modifies) {
-		for (var id in action.modifies) {
-			if (id == "location") {
-				this._location = eval(action.modifies[id]);
-			} else {
-				var x = this._variables[id];
-				eval("x" + action.modifies[id]);
-				this._variables[id] = x;
+	if (action.alternatives) {
+		for (var i=0;i<action.alternatives.length;i++) {
+			var alternative = action.alternatives[i];
+			if (this._validateRequirements(alternative.requires)) {
+				result = alternative;
+				break;
 			}
+		}
+	}
+	
+	if (result.variables) {
+		for (var id in result.variables) {
+			var x = this._variables[id];
+			eval("x" + result.variables[id]);
+			this._variables[id] = x;
 		}
 		
 		this._updateInventory();
 	}
 	
-	this._location = (action.location || this._location);
+	this._location = (result.location || this._location);
+
+	if (result.result) { 
+		var p = OZ.DOM.elm("p", {innerHTML: result.result});
+		OZ.DOM.clear(this._dom.actions);
+		OZ.DOM.append([this._dom.actions, p, this._dom.ok]);
+	} else {
+		this._showLocation();
+	}
+}
+
+AGE.prototype._clickOK = function(e) {
 	this._showLocation();
 }
