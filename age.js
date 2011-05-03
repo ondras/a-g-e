@@ -1,6 +1,6 @@
 var _ = function(key) { 
 	try {
-		return arguments.callee.DICT[key];
+		return arguments.callee.DICT[key] || key;
 	} catch (e) {
 		return key; 
 	}
@@ -17,12 +17,14 @@ AGE.prototype.init = function(file) {
 	this._location = null;
 	this._variables = {};
 	this._actions = [];
+	this._moves = 0;
 	
 	this._dom = {
 		header: OZ.DOM.elm("h2"),
 		location: OZ.DOM.elm("div", {id:"location"}),
 		actions: OZ.DOM.elm("div", {id:"actions"}),
 		inventory: OZ.DOM.elm("div", {id:"inventory"}),
+		stats: OZ.DOM.elm("div", {id:"stats"}),
 		ok: OZ.DOM.elm("button", {innerHTML:"OK"})
 	}
 	
@@ -68,6 +70,7 @@ AGE.prototype._start = function() {
 	
 	this._variables = {};
 	this._location = null;
+	this._moves = 0;
 
 	/* init variables */
 	for (var id in this._adventure.variables) {
@@ -91,6 +94,28 @@ AGE.prototype._start = function() {
 	this._updateInventory();
 }
 
+AGE.prototype._end = function() {
+	var discovered = 0;
+	for (var id in this._adventure.locations) {
+		if (this._adventure.locations[id].discovered) { discovered++; }
+	}
+	discovered--;
+	
+	var h3 = OZ.DOM.elm("h3", {innerHTML:_("stats")});
+	var ul = OZ.DOM.elm("ul");
+	
+	var li = OZ.DOM.elm("li", {innerHTML:_("stats.discovered") + " " + discovered});
+	ul.appendChild(li);
+	
+	var li = OZ.DOM.elm("li", {innerHTML:_("stats.moves") + " " + this._moves});
+	ul.appendChild(li);
+
+	OZ.DOM.append(
+		[this._dom.stats, h3, ul],
+		[document.body, this._dom.stats]
+	);
+}
+
 /**
  * Display current location
  */
@@ -109,7 +134,11 @@ AGE.prototype._showLocation = function() {
 		this._dom.location.appendChild(p);
 	}
 	
-	if (!(location.flags & AGE.LOCATION_END)) { this._showActions(); }
+	if (location.flags & AGE.LOCATION_END) { 
+		this._end();
+	} else {
+		this._showActions(); 
+	}
 }
 
 /**
@@ -248,6 +277,7 @@ AGE.prototype._executeAction = function(action) {
 		this._updateInventory();
 	}
 	
+	if (result.location && result.location != this._location) { this._moves++; }
 	this._location = (result.location || this._location);
 
 	if (result.result) { 
