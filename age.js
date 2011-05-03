@@ -13,6 +13,7 @@ AGE.LOCATION_END	= 2;
 AGE.LOCATION_INDEX	= 4;
 
 AGE.prototype.init = function(file) {
+	AGE.current = this;
 	this._adventure = null;
 	this._location = null;
 	this._variables = {};
@@ -34,6 +35,51 @@ AGE.prototype.init = function(file) {
 	OZ.Event.add(this._dom.ok, "click", this._clickOK.bind(this));
 	
 	OZ.Request(file, this._responseAdventure.bind(this));
+}
+
+AGE.prototype.graph = function() {
+	var str = "digraph G {\n";
+	str += "\tgraph[splines=true,overlap=prism,sep=0.3]\n";
+	str += "\tnode[width=3,height=1]\n";
+	
+	for (var id in this._adventure.locations) {
+		var location = this._adventure.locations[id];
+		str += "\t" + id + " [label=\"" + location.name + "\"";
+		if (location.flags & AGE.LOCATION_INDEX) { str += ",penwidth=4"; }
+		if (location.flags & AGE.LOCATION_START) { str += ",color=\"blue\""; }
+		if (location.flags & AGE.LOCATION_END) { str += ",color=\"red\""; }
+		str += "]\n";
+	}
+	
+	str += "\n";
+	
+	for (var id in this._adventure.locations) {
+		var location = this._adventure.locations[id];
+		var targets = [];
+		for (var aid in location.actions) {
+			var action = location.actions[aid];
+			if (action.location && action.location != id && targets.indexOf(action.location) == -1) {
+				targets.push(action.location);
+				str += "\t" + id + " -> " + action.location + "\n";
+			}
+			
+			if (!action.alternatives) { continue; }
+			
+			for (var i=0;i<action.alternatives.length;i++) {
+				var alternative = action.alternatives[i];
+				if (alternative.location && alternative.location != id && targets.indexOf(alternative.location)) {
+					targets.push(alternative.location);
+					str += "\t" + id + " -> " + alternative.location + "\n";
+				}
+			}
+			
+		}
+	}
+
+	str += "\}";
+	
+	var ta = OZ.DOM.elm("textarea", {position:"absolute", left:"0px", top:"0px", value:str});
+	document.body.appendChild(ta);
 }
 
 AGE.prototype._responseAdventure = function(adventure) {
