@@ -98,7 +98,7 @@ AGE.prototype._responseAdventure = function(adventure) {
 }
 
 AGE.prototype._requestLanguage = function(language) {
-	var f = "age." + language + ".js";
+	var f = "age." + language + ".js?r=" + Math.random();
 	OZ.Request(f, this._responseLanguage.bind(this));
 }
 
