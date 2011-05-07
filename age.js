@@ -82,6 +82,61 @@ AGE.prototype.graph = function() {
 	document.body.appendChild(ta);
 }
 
+AGE.prototype.print = function() {
+	var html = "";
+	html += "<!doctype html><html><head><title>" + this._adventure.name + "</title><meta http-equiv='Content-Type' content='text/html; charset=utf-8' /><link rel='stylesheet' type='text/css' href='print.css' /></head><body>\n";
+	
+	for (var id in this._adventure.locations) {
+		html += this._printLocation(id);
+	}
+	
+	html += "</body></html>";
+	
+	var ta = OZ.DOM.elm("textarea", {position:"absolute", left:"0px", top:"0px", value:html});
+	document.body.appendChild(ta);
+}
+
+AGE.prototype._printLocation = function(id) {
+	var location = this._adventure.locations[id];
+	var str = "";
+	
+	str += "\t<div class='location'>\n";
+	str += "\t\t<h2><span class='id'>" + id + ":</span> " + location.name + "</h2>\n";
+	if (location.image) {
+		str += "\t\t<img src='" + location.image + "' />\n";
+	}
+	if (location.description) { 
+		str += "\t\t<p>" + location.description + "</p>\n";
+	}
+	str += "\t</div>\n";
+	
+	if (location.actions) {
+		str += this._printActions(location.actions);
+	}
+	return str;
+}
+
+AGE.prototype._printActions = function(actions) {
+	var str = "";
+	str += "\t<div class='actions'><table>\n";
+	
+	var row1 = "\t\t<tr class='action'>\n";
+	var row2 = "\t\t<tr class='result'>\n";
+	
+	for (var i=0;i<actions.length;i++) {
+		var action = actions[i];
+		row1 += "\t\t\t<td><span class='number'>" + (i+1) + ":</span> " + action.description + "</td>\n";
+		row2 += "\t\t\t<td><span class='number'>" + (i+1) + ":</span> " + (action.result || "") + "</td>\n";
+	}
+	
+	row1 += "\t\t</tr>\n";
+	row2 += "\t\t</tr>\n";
+	
+	str += row1 + row2;
+	str += "\t</table></div>\n";
+	return str;
+}
+
 AGE.prototype._responseAdventure = function(adventure) {
 	this._adventure = eval("(" + adventure + ")");
 	
@@ -174,6 +229,11 @@ AGE.prototype._showLocation = function() {
 	
 	var h3 = OZ.DOM.elm("h3", {innerHTML:location.name});
 	this._dom.location.appendChild(h3);
+	
+	if (location.image) {
+		var img = OZ.DOM.elm("img", {src:location.image});
+		this._dom.location.appendChild(img);
+	}
 	
 	if (location.description) {
 		var p = OZ.DOM.elm("p", {innerHTML:location.description});

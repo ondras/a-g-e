@@ -26,6 +26,7 @@
 		"start": {
 			name: "Starting place",
 			description: "wtf omg lol",
+			image: "start.jpg",
 			flags: AGE.LOCATION_START | AGE.LOCATION_INDEX,
 			actions: [
 				{
