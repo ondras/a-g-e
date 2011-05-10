@@ -103,7 +103,7 @@ AGE.prototype._printLocation = function(id) {
 	str += "\t<div class='location'>\n";
 	str += "\t\t<h2><span class='id'>" + id + ":</span> " + location.name + "</h2>\n";
 	if (location.image) {
-		str += "\t\t<img src='" + location.image + "' />\n";
+		str += "\t\t<div class='image'><img src='" + location.image + "' /></div>\n";
 	}
 	if (location.description) { 
 		str += "\t\t<p>" + location.description + "</p>\n";
@@ -111,12 +111,12 @@ AGE.prototype._printLocation = function(id) {
 	str += "\t</div>\n";
 	
 	if (location.actions) {
-		str += this._printActions(location.actions);
+		str += this._printActions(id, location.actions);
 	}
 	return str;
 }
 
-AGE.prototype._printActions = function(actions) {
+AGE.prototype._printActions = function(id, actions) {
 	var str = "";
 	str += "\t<div class='actions'><table>\n";
 	
@@ -125,8 +125,8 @@ AGE.prototype._printActions = function(actions) {
 	
 	for (var i=0;i<actions.length;i++) {
 		var action = actions[i];
-		row1 += "\t\t\t<td><span class='number'>" + (i+1) + ":</span> " + action.description + "</td>\n";
-		row2 += "\t\t\t<td><span class='number'>" + (i+1) + ":</span> " + (action.result || "") + "</td>\n";
+		row1 += "\t\t\t<td><span class='number'>" + id + (i+1) + ":</span> " + action.description + "</td>\n";
+		row2 += "\t\t\t<td><span class='number'>" + id + (i+1) + ":</span> " + (action.result || "") + "</td>\n";
 	}
 	
 	row1 += "\t\t</tr>\n";
