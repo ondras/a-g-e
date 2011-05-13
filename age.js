@@ -12,7 +12,7 @@ AGE.LOCATION_START	= 1;
 AGE.LOCATION_END	= 2;
 AGE.LOCATION_INDEX	= 4;
 
-AGE.prototype.init = function(file) {
+AGE.prototype.init = function(file, parent) {
 	AGE.current = this;
 	this._adventure = null;
 	this._location = null;
@@ -21,6 +21,7 @@ AGE.prototype.init = function(file) {
 	this._moves = 0;
 	
 	this._dom = {
+		parent: parent,
 		header: OZ.DOM.elm("h2"),
 		location: OZ.DOM.elm("div", {id:"location"}),
 		actions: OZ.DOM.elm("div", {id:"actions"}),
@@ -29,8 +30,8 @@ AGE.prototype.init = function(file) {
 		ok: OZ.DOM.elm("button", {innerHTML:"OK"})
 	}
 	
-	document.body.innerHTML = "";
-	OZ.DOM.append([document.body, this._dom.header, this._dom.inventory, this._dom.location, this._dom.actions]);
+	parent.innerHTML = "";
+	OZ.DOM.append([parent, this._dom.header, this._dom.inventory, this._dom.location, this._dom.actions]);
 	OZ.Event.add(this._dom.actions, "click", this._clickAction.bind(this));
 	OZ.Event.add(this._dom.ok, "click", this._clickOK.bind(this));
 	
@@ -213,7 +214,7 @@ AGE.prototype._end = function() {
 
 	OZ.DOM.append(
 		[this._dom.stats, h3, ul],
-		[document.body, this._dom.stats]
+		[this._dom.parent, this._dom.stats]
 	);
 }
 

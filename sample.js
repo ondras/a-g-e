@@ -5,107 +5,98 @@
 	
 	variables: {
 		"hp": {
-			name: "HitPoints",
+			name: "Hit Points",
 			value: 5,
-			visible: false
+			visible: true
 		},
 		"money": {
-			name: "Dollarz",
-			value: 2,
-			visible: true
-		},
-		"courage": {
-			name: "Courage",
-			value: true,
+			name: "Money",
+			value: 0,
 			visible: true
 		}
-		
 	},
 	
 	locations: {
 		"start": {
 			name: "Starting place",
-			description: "wtf omg lol",
-			image: "start.jpg",
+			description: "This is a starting location, as well as an index place.",
 			flags: AGE.LOCATION_START | AGE.LOCATION_INDEX,
 			actions: [
 				{
-					description: "Go to middle place",
-					location: "middle"
+					description: "Go to place A",
+					location: "A"
 				},
-				
 				{
-					description: "Go randomly",
-					
-					alternatives: [
-						{
-							requires: {
-								"money": ">-1 && Math.random() > 0.5"
-							},
-							location: "random2",
-							result: "This is results #2"
-						}
-					],
-
-					location: "random1",
-					result: "This is result #1"
+					description: "Go to place B",
+					location: "B"
 				},
-				
 				{
-					description: "Go to end",
+					description: "Go to place C. This option is not available, unless you have some money.",
+					location: "C",
 					requires: {
-						"money": ">= 3"
-					},
-					location: "end"
-				},
-				
-			]
-		},
-		
-		"middle": {
-			name: "Middle place",
-			description: "where do u go",
-			actions: [
-				{
-					description: "Go to start place",
-					location: "start"
-				},
-				
-				{
-					description: "Earn money",
-					result: "You earn much money.",
-					variables: {
-						"money": "+= 1"
+						"money": ">1"
 					}
 				}
 			]
 		},
 		
-		"random1": {
-			name: "Random 1",
+		"A": {
+			name: "Place A",
+			description: "You can earn money here.",
 			actions: [
 				{
-					description: "Start",
-					location: "start"
+					description: "Earn money.",
+					variables: {
+						"money": "+= 1"
+					},
+					result: "You earn some money."
 				}
 			]
 		},
 
-		"random2": {
-			name: "Random 2",
+		"B": {
+			name: "Place B",
+			description: "This is a very dangerous place. One can lose a hitpoint or two here. But only when you have >1 HP :)",
 			actions: [
 				{
-					description: "Start",
-					location: "start"
+					description: "Do something risky.",
+					alternatives: [
+						{
+							requires: {
+								"hp": "== 1"
+							},
+							result: "You have only one hitpoint, so you decide not to risk."
+						}
+					],
+					variables: {
+						"hp": "-= 1"
+					},
+					result: "You lose one hitpoint."
 				}
 			]
 		},
 		
+		"C": {
+			name: "Place C",
+			description: "Welcome to Place C. You are one step from winning!",
+			actions: [
+				{
+					description: "I will do nothing.",
+					result: "You stay and do nothing."
+				},
+				
+				{
+					description: "I will go to the end location.",
+					location: "end"
+				}
+			]
+		},
+
 		"end": {
 			name: "End of the game!",
-			description: "u win teh much.",
+			description: "Congratulations, you won this sample game.",
 			flags: AGE.LOCATION_END
 		}
-	},
+	}
 	
 }
