@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<script src="oz.js"></script>
+		<script src="age.js"></script>
+		<style>
+			#footer {
+				margin-top: 1em;
+				padding-top: 1em;
+				border-top: 1px solid gray;
+				font-size: x-small;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="game"></div>
+		<div id="footer">Powered by <a href="https://github.com/ondras/a-g-e/">a-g-e</a>, the Adventure Game Engine. &copy; <a href="http://ondras.zarovi.cz/">Ondřej Žára</a></div>
+		<script>
+			var node = document.querySelector("#game");
+			var name = "sample";
+			var r = location.search.match(/file=([^&]+)/);
+			if (r) { name = r[1]; }
+			new AGE(name + ".js", node);
+		</script>
+	</body>
+</html>
