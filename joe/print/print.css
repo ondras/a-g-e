@@ -1,0 +1,54 @@
+body {
+	font-family: verdana;
+}
+
+.actions {
+	margin-top: 5em;
+}
+
+.actions table {
+	border-collapse: collapse;
+}
+
+.actions td {
+	padding: 1em;
+	vertical-align: top;
+	border: 2px solid black;
+}
+
+.actions .number {
+	font-weight: bold;
+}
+
+.actions td:first-child {
+	padding-left: 0em;
+	border-left: none;
+}
+
+.actions td:last-child {
+	padding-right: 0em;
+	border-right: none;
+}
+
+.action, .actions {
+	page-break-after: always;
+}
+
+.result td {
+	padding-bottom: 3em;
+}
+
+h2 {
+	text-align: center;
+	padding: 1em;
+	border-radius: 100em;
+	border: 8px double black;
+}
+
+.image {
+	text-align: center;
+}
+
+img {
+	width: 100%;
+}

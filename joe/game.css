@@ -1,0 +1,54 @@
+@font-face {
+	font-family: west;
+	src: url(akaPosse.ttf);
+}
+
+h1, h2, h3 {
+	font-family: west;
+	font-weight: normal;
+}
+
+h3 {
+	font-size: 150%;
+	margin: 1em 0em;
+}
+
+h2 {
+	font-size: 200%;
+	text-align: center;
+}
+
+h2, #location, #actions {
+	width: 70%;
+}
+
+button {
+	font-size: 150%;
+	font-weight: bold;
+	padding: 0.5em 1em;
+}
+
+img {
+	width: 75%;
+}
+
+#inventory {
+	float: right;
+	margin: 1em;
+	padding: 1em;
+	padding-top: 0em;
+	border: 1px solid gray;
+	background-color: #eee;
+}
+
+li {
+	line-height: 150%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
