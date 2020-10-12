@@ -1,8 +1,7 @@
 {
 	name: "Sample Adventure",
 	language: "en",
-	style: "sample.css",
-	
+
 	variables: {
 		"hp": {
 			name: "Hit Points",
@@ -15,7 +14,7 @@
 			visible: true
 		}
 	},
-	
+
 	locations: {
 		"start": {
 			name: "Starting place",
@@ -39,7 +38,7 @@
 				}
 			]
 		},
-		
+
 		"A": {
 			name: "Place A",
 			description: "You can earn money here.",
@@ -75,7 +74,7 @@
 				}
 			]
 		},
-		
+
 		"C": {
 			name: "Place C",
 			description: "Welcome to Place C. You are one step from winning!",
@@ -84,7 +83,7 @@
 					description: "I will do nothing.",
 					result: "You stay and do nothing."
 				},
-				
+
 				{
 					description: "I will go to the end location.",
 					location: "end"
@@ -98,5 +97,5 @@
 			flags: AGE.LOCATION_END
 		}
 	}
-	
+
 }

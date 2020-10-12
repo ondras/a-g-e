@@ -1,8 +1,8 @@
-var _ = function(key) { 
+var _ = function(key) {
 	try {
 		return arguments.callee.DICT[key] || key;
 	} catch (e) {
-		return key; 
+		return key;
 	}
 }
 
@@ -12,14 +12,14 @@ AGE.LOCATION_START	= 1;
 AGE.LOCATION_END	= 2;
 AGE.LOCATION_INDEX	= 4;
 
-AGE.prototype.init = function(file, parent) {
+AGE.prototype.init = function(name, parent) {
 	AGE.current = this;
 	this._adventure = null;
 	this._location = null;
 	this._variables = {};
 	this._actions = [];
 	this._moves = 0;
-	
+
 	this._dom = {
 		parent: parent,
 		header: OZ.DOM.elm("h2"),
@@ -29,20 +29,20 @@ AGE.prototype.init = function(file, parent) {
 		stats: OZ.DOM.elm("div", {id:"stats"}),
 		ok: OZ.DOM.elm("button", {innerHTML:"OK"})
 	}
-	
+
 	parent.innerHTML = "";
 	OZ.DOM.append([parent, this._dom.header, this._dom.inventory, this._dom.location, this._dom.actions]);
 	OZ.Event.add(this._dom.actions, "click", this._clickAction.bind(this));
 	OZ.Event.add(this._dom.ok, "click", this._clickOK.bind(this));
-	
-	OZ.Request(file, this._responseAdventure.bind(this));
+
+	OZ.Request(name + "/game.js", this._responseAdventure.bind(this, name));
 }
 
 AGE.prototype.graph = function() {
 	var str = "digraph G {\n";
 	str += "\tgraph[splines=true,overlap=prism,sep=0.3]\n";
 	str += "\tnode[width=3,height=1]\n";
-	
+
 	for (var id in this._adventure.locations) {
 		var location = this._adventure.locations[id];
 		str += "\t" + id + " [label=\"" + location.name + "\"";
@@ -51,9 +51,9 @@ AGE.prototype.graph = function() {
 		if (location.flags & AGE.LOCATION_END) { str += ",color=\"red\""; }
 		str += "]\n";
 	}
-	
+
 	str += "\n";
-	
+
 	for (var id in this._adventure.locations) {
 		var location = this._adventure.locations[id];
 		var targets = [];
@@ -63,9 +63,9 @@ AGE.prototype.graph = function() {
 				targets.push(action.location);
 				str += "\t" + id + " -> " + action.location + "\n";
 			}
-			
+
 			if (!action.alternatives) { continue; }
-			
+
 			for (var i=0;i<action.alternatives.length;i++) {
 				var alternative = action.alternatives[i];
 				if (alternative.location && alternative.location != id && targets.indexOf(alternative.location)) {
@@ -73,12 +73,12 @@ AGE.prototype.graph = function() {
 					str += "\t" + id + " -> " + alternative.location + "\n";
 				}
 			}
-			
+
 		}
 	}
 
 	str += "\}";
-	
+
 	var ta = OZ.DOM.elm("textarea", {position:"absolute", left:"0px", top:"0px", value:str});
 	document.body.appendChild(ta);
 }
@@ -86,13 +86,13 @@ AGE.prototype.graph = function() {
 AGE.prototype.print = function() {
 	var html = "";
 	html += "<!doctype html><html><head><title>" + this._adventure.name + "</title><meta http-equiv='Content-Type' content='text/html; charset=utf-8' /><link rel='stylesheet' type='text/css' href='print.css' /></head><body>\n";
-	
+
 	for (var id in this._adventure.locations) {
 		html += this._printLocation(id);
 	}
-	
+
 	html += "</body></html>";
-	
+
 	var ta = OZ.DOM.elm("textarea", {position:"absolute", left:"0px", top:"0px", value:html});
 	document.body.appendChild(ta);
 }
@@ -100,17 +100,17 @@ AGE.prototype.print = function() {
 AGE.prototype._printLocation = function(id) {
 	var location = this._adventure.locations[id];
 	var str = "";
-	
+
 	str += "\t<div class='location'>\n";
 	str += "\t\t<h2><span class='id'>" + id + ":</span> " + location.name + "</h2>\n";
 	if (location.image) {
 		str += "\t\t<div class='image'><img src='" + location.image + "' /></div>\n";
 	}
-	if (location.description) { 
+	if (location.description) {
 		str += "\t\t<p>" + location.description + "</p>\n";
 	}
 	str += "\t</div>\n";
-	
+
 	if (location.actions) {
 		str += this._printActions(id, location.actions);
 	}
@@ -120,35 +120,33 @@ AGE.prototype._printLocation = function(id) {
 AGE.prototype._printActions = function(id, actions) {
 	var str = "";
 	str += "\t<div class='actions'><table>\n";
-	
+
 	var row1 = "\t\t<tr class='action'>\n";
 	var row2 = "\t\t<tr class='result'>\n";
-	
+
 	for (var i=0;i<actions.length;i++) {
 		var action = actions[i];
 		row1 += "\t\t\t<td><span class='number'>" + id + (i+1) + ":</span> " + action.description + "</td>\n";
 		row2 += "\t\t\t<td><span class='number'>" + id + (i+1) + ":</span> " + (action.result || "") + "</td>\n";
 	}
-	
+
 	row1 += "\t\t</tr>\n";
 	row2 += "\t\t</tr>\n";
-	
+
 	str += row1 + row2;
 	str += "\t</table></div>\n";
 	return str;
 }
 
-AGE.prototype._responseAdventure = function(adventure) {
+AGE.prototype._responseAdventure = function(name, adventure) {
 	this._adventure = eval("(" + adventure + ")");
-	
+
 	var links = document.getElementsByTagName("link");
 	while (links.length) { links[0].parentNode.removeChild(links[0]); }
-	
-	if (this._adventure.style) {
-		var link = OZ.DOM.elm("link", {rel:"stylesheet", type:"text/css", href:this._adventure.style});
-		document.getElementsByTagName("head")[0].appendChild(link);
-	}
-	
+
+	var link = OZ.DOM.elm("link", {rel:"stylesheet", href:name + "/game.css"});
+	document.getElementsByTagName("head")[0].appendChild(link);
+
 	var language = this._adventure.language || "en";
 	this._requestLanguage(language);
 }
@@ -159,7 +157,7 @@ AGE.prototype._requestLanguage = function(language) {
 }
 
 AGE.prototype._responseLanguage = function(data, status) {
-	if (status != 200) { 
+	if (status != 200) {
 		this._requestLanguage("en");
 	} else {
 		eval(data);
@@ -169,7 +167,7 @@ AGE.prototype._responseLanguage = function(data, status) {
 
 AGE.prototype._start = function() {
 	this._dom.header.innerHTML = this._adventure.name;
-	
+
 	this._variables = {};
 	this._location = null;
 	this._moves = 0;
@@ -179,19 +177,19 @@ AGE.prototype._start = function() {
 		var v = this._adventure.variables[id];
 		this._variables[id] = v.value;
 	}
-	
+
 	/* find start place, mark all as not discovered */
 	for (var id in this._adventure.locations) {
 		var l = this._adventure.locations[id];
 		l.discovered = false;
 		if (l.flags & AGE.LOCATION_START) { this._location = id; }
 	}
-	
+
 	if (!this._location) {
 		alert(_("error.nostart"));
 		return;
 	}
-	
+
 	this._showLocation();
 	this._updateInventory();
 }
@@ -202,13 +200,13 @@ AGE.prototype._end = function() {
 		if (this._adventure.locations[id].discovered) { discovered++; }
 	}
 	discovered--;
-	
+
 	var h3 = OZ.DOM.elm("h3", {innerHTML:_("stats")});
 	var ul = OZ.DOM.elm("ul");
-	
+
 	var li = OZ.DOM.elm("li", {innerHTML:_("stats.discovered") + " " + discovered});
 	ul.appendChild(li);
-	
+
 	var li = OZ.DOM.elm("li", {innerHTML:_("stats.moves") + " " + this._moves});
 	ul.appendChild(li);
 
@@ -224,27 +222,27 @@ AGE.prototype._end = function() {
 AGE.prototype._showLocation = function() {
 	OZ.DOM.clear(this._dom.location);
 	this._dom.actions.style.display = "none";
-	
+
 	var location = this._adventure.locations[this._location];
 	location.discovered = true;
-	
+
 	var h3 = OZ.DOM.elm("h3", {innerHTML:location.name});
 	this._dom.location.appendChild(h3);
-	
+
 	if (location.image) {
 		var img = OZ.DOM.elm("img", {src:location.image});
 		this._dom.location.appendChild(img);
 	}
-	
+
 	if (location.description) {
 		var p = OZ.DOM.elm("p", {innerHTML:location.description});
 		this._dom.location.appendChild(p);
 	}
-	
-	if (location.flags & AGE.LOCATION_END) { 
+
+	if (location.flags & AGE.LOCATION_END) {
 		this._end();
 	} else {
-		this._showActions(); 
+		this._showActions();
 	}
 }
 
@@ -254,11 +252,11 @@ AGE.prototype._showLocation = function() {
 AGE.prototype._showActions = function() {
 	var actions = this._adventure.locations[this._location].actions;
 	OZ.DOM.clear(this._dom.actions);
-	
+
 	var h3 = OZ.DOM.elm("h3", {innerHTML:_("actions")});
 	var ul = OZ.DOM.elm("ul");
 	OZ.DOM.append([this._dom.actions, h3, ul]);
-	
+
 	this._actions = [];
 	for (var i=0;i<actions.length;i++) {
 		var action = actions[i];
@@ -273,7 +271,7 @@ AGE.prototype._showActions = function() {
 		ul.appendChild(li);
 		this._actions.push(action);
 	}
-	
+
 	/* default, index-based actions */
 	var indexActions = [];
 	for (var id in this._adventure.locations) {
@@ -283,7 +281,7 @@ AGE.prototype._showActions = function() {
 			indexActions.push(action);
 		}
 	}
-	
+
 	if (indexActions.length) {
 		var h3 = OZ.DOM.elm("h3", {innerHTML:_("index")});
 		var ul = OZ.DOM.elm("ul");
@@ -296,9 +294,9 @@ AGE.prototype._showActions = function() {
 			this._actions.push(action);
 			OZ.DOM.append([ul, li], [li, a]);
 		}
-		OZ.DOM.append([this._dom.actions, h3, ul]);		
+		OZ.DOM.append([this._dom.actions, h3, ul]);
 	}
-	
+
 	if (this._actions.length) { this._dom.actions.style.display = ""; }
 }
 
@@ -307,7 +305,7 @@ AGE.prototype._showActions = function() {
  */
 AGE.prototype._updateInventory = function() {
 	OZ.DOM.clear(this._dom.inventory);
-	
+
 	var h3 = OZ.DOM.elm("h3", {innerHTML:_("inventory")});
 	var ul = OZ.DOM.elm("ul");
 
@@ -328,13 +326,13 @@ AGE.prototype._updateInventory = function() {
 
 		this._dom.inventory.appendChild(li);
 	}
-	
+
 	if (count) {
 		this._dom.inventory.style.display = "";
 	} else {
 		this._dom.inventory.style.display = "none";
 	}
-	
+
 }
 
 /**
@@ -363,7 +361,7 @@ AGE.prototype._validateRequirements = function(requires) {
  */
 AGE.prototype._executeAction = function(action) {
 	var result = action;
-	
+
 	if (action.alternatives) {
 		for (var i=0;i<action.alternatives.length;i++) {
 			var alternative = action.alternatives[i];
@@ -373,21 +371,21 @@ AGE.prototype._executeAction = function(action) {
 			}
 		}
 	}
-	
+
 	if (result.variables) {
 		for (var id in result.variables) {
 			var x = this._variables[id];
 			eval("x" + result.variables[id]);
 			this._variables[id] = x;
 		}
-		
+
 		this._updateInventory();
 	}
-	
+
 	if (result.location && result.location != this._location) { this._moves++; }
 	this._location = (result.location || this._location);
 
-	if (result.result) { 
+	if (result.result) {
 		var p = OZ.DOM.elm("p", {innerHTML: result.result});
 		OZ.DOM.clear(this._dom.actions);
 		OZ.DOM.append([this._dom.actions, p, this._dom.ok]);

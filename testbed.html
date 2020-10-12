@@ -15,13 +15,13 @@
 	</head>
 	<body>
 		<div id="game"></div>
-		<div id="footer">Powered by <a href="https://github.com/ondras/a-g-e/">a-g-e</a>, the Adventure Game Engine. &copy; <a href="http://ondras.zarovi.cz/">Ondřej Žára</a></div>
+		<div id="footer">Powered by <a href="https://github.com/ondras/a-g-e/">a-g-e</a>, the Adventure Game Engine. &copy; <a href="https://ondras.zarovi.cz/">Ondřej Žára</a></div>
 		<script>
 			var node = document.querySelector("#game");
 			var name = "sample";
-			var r = location.search.match(/file=([^&]+)/);
+			var r = location.search.match(/game=([^&]+)/);
 			if (r) { name = r[1]; }
-			new AGE(name + ".js", node);
+			new AGE(name, node);
 		</script>
 	</body>
 </html>
