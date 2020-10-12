@@ -14,6 +14,7 @@ AGE.LOCATION_INDEX	= 4;
 
 AGE.prototype.init = function(name, parent) {
 	AGE.current = this;
+	this._name = name;
 	this._adventure = null;
 	this._location = null;
 	this._variables = {};
@@ -35,7 +36,7 @@ AGE.prototype.init = function(name, parent) {
 	OZ.Event.add(this._dom.actions, "click", this._clickAction.bind(this));
 	OZ.Event.add(this._dom.ok, "click", this._clickOK.bind(this));
 
-	OZ.Request(name + "/game.js", this._responseAdventure.bind(this, name));
+	OZ.Request(name + "/game.js", this._responseAdventure.bind(this));
 }
 
 AGE.prototype.graph = function() {
@@ -104,7 +105,7 @@ AGE.prototype._printLocation = function(id) {
 	str += "\t<div class='location'>\n";
 	str += "\t\t<h2><span class='id'>" + id + ":</span> " + location.name + "</h2>\n";
 	if (location.image) {
-		str += "\t\t<div class='image'><img src='" + location.image + "' /></div>\n";
+		str += "\t\t<div class='image'><img src='" + this._name + "/" + location.image + "' /></div>\n";
 	}
 	if (location.description) {
 		str += "\t\t<p>" + location.description + "</p>\n";
@@ -138,13 +139,13 @@ AGE.prototype._printActions = function(id, actions) {
 	return str;
 }
 
-AGE.prototype._responseAdventure = function(name, adventure) {
+AGE.prototype._responseAdventure = function(adventure) {
 	this._adventure = eval("(" + adventure + ")");
 
 	var links = document.getElementsByTagName("link");
 	while (links.length) { links[0].parentNode.removeChild(links[0]); }
 
-	var link = OZ.DOM.elm("link", {rel:"stylesheet", href:name + "/game.css"});
+	var link = OZ.DOM.elm("link", {rel:"stylesheet", href:this._name + "/game.css"});
 	document.getElementsByTagName("head")[0].appendChild(link);
 
 	var language = this._adventure.language || "en";
@@ -230,7 +231,7 @@ AGE.prototype._showLocation = function() {
 	this._dom.location.appendChild(h3);
 
 	if (location.image) {
-		var img = OZ.DOM.elm("img", {src:location.image});
+		var img = OZ.DOM.elm("img", {src:this._name + "/" + location.image});
 		this._dom.location.appendChild(img);
 	}
 
